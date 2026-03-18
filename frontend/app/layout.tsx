@@ -35,8 +35,20 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Runtime configuration - read from environment variables at server startup
+  const runtimeConfig = {
+    API_DOMAIN: process.env.API_DOMAIN || 'http://localhost:8010',
+    WS_DOMAIN: process.env.WS_DOMAIN || 'ws://localhost:8010',
+  };
+
   return (
     <html lang={defaultLocale}>
+      {/* Inject runtime config as global variable */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `window.__RUNTIME_CONFIG__ = ${JSON.stringify(runtimeConfig)};`,
+        }}
+      />
       <body className="font-sans bg-bg-primary text-text-primary">
         <I18nProvider>
           <RootLayoutContent>{children}</RootLayoutContent>

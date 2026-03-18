@@ -235,13 +235,15 @@ cp backend/.env.example backend/.env
 # - TASK_TIMEOUT=3600       # Task timeout (seconds)
 # - POST_PROCESS_TIMEOUT=600 # Post-processing timeout (seconds)
 
-# Frontend configuration
+# Frontend configuration (local development)
 cp frontend/.env.example frontend/.env
 
-# Edit/frontend/.env, main configuration items:
+# Edit frontend/.env, main configuration items:
 # - NEXT_PUBLIC_API_DOMAIN=http://localhost:8010     # Backend API address
 # - NEXT_PUBLIC_WS_DOMAIN=ws://localhost:8010        # WebSocket address
 ```
+
+> **Note**: Frontend environment variables are only used for local development. Production (Docker deployment) uses **runtime configuration**, no need to pass environment variables at build time.
 
 ---
 
@@ -325,7 +327,9 @@ sudo firewall-cmd --reload
 > **Note**: `0.0.0.0` listening will expose to LAN, make sure to use in trusted networks.
 > Production environment should use reverse proxy (Nginx/Caddy) and configure HTTPS.
 
-### Docker Compose [To be improved]
+### Docker Compose
+
+**One-click deployment (Recommended):**
 
 ```bash
 # 1. Clone repository
@@ -342,6 +346,28 @@ docker-compose up -d
 # 4. Access frontend
 open http://localhost:3010
 ```
+
+**Runtime Configuration (Key Feature):**
+
+Frontend supports **runtime environment variable injection**, no need to specify backend address at build time:
+
+```bash
+# Build universal image (build once, deploy anywhere)
+docker build -t agent-center:latest -f frontend/Dockerfile .
+
+# Specify backend address at runtime
+docker run -d --name ac-frontend \
+  -p 3010:3010 \
+  -e API_DOMAIN=http://backend:8010 \
+  -e WS_DOMAIN=ws://backend:8010 \
+  agent-center:latest
+```
+
+**Configuration:**
+- `API_DOMAIN`: Backend API address (required)
+- `WS_DOMAIN`: WebSocket address (required)
+- Configuration is dynamically injected into pages via `/api/config` endpoint
+- Frontend automatically reads configuration and sends requests to correct backend address
 
 ---
 

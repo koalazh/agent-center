@@ -20,7 +20,7 @@ services:
       - "8010:8010"
     environment:
       - DATABASE_URL=sqlite+aiosqlite:///./agent-center.db
-      - CORS_ORIGINS=http://localhost:3010,http://frontend:3010
+      - CORS_ORIGINS_STR=http://localhost:3010,http://frontend:3010,http://127.0.0.1:3010
       - DEBUG=true
       - AC_MAX_CONCURRENT=5
       - IS_SANDBOX=1
@@ -43,7 +43,8 @@ services:
       - "3010:3010"
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_DOMAIN=http://backend:8010
+      - API_DOMAIN=http://backend:8010
+      - WS_DOMAIN=ws://backend:8010
     depends_on:
       - backend
     healthcheck:

@@ -7,7 +7,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useManagerStore } from '@/lib/state/atoms';
-import { WS_BASE_URL } from '@/lib/api/client';
+import { getWsBaseUrl } from '@/lib/api/client';
 
 const debugLog = (...args: unknown[]) => {
   // Debug logging disabled in production
@@ -37,7 +37,8 @@ export function useWebSocket(path: string, options: UseWebSocketOptions = {}) {
   const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
-    const url = `${WS_BASE_URL}${path}`;
+    const wsDomain = getWsBaseUrl();
+    const url = `${wsDomain}${path}`;
     const ws = new WebSocket(url);
 
     ws.onopen = () => {
@@ -149,7 +150,7 @@ export function initGlobalWebSocket() {
     isReconnecting: false,
   };
 
-  const url = `${WS_BASE_URL}/ws/events`;
+  const url = `${getWsBaseUrl()}/ws/events`;
   const ws = new WebSocket(url);
 
   ws.onopen = () => {
