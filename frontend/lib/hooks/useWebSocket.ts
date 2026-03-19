@@ -10,7 +10,10 @@ import { useManagerStore } from '@/lib/state/atoms';
 import { getWsBaseUrl } from '@/lib/api/client';
 
 const debugLog = (...args: unknown[]) => {
-  // Debug logging disabled in production
+  // Debug logging enabled for troubleshooting
+  if (typeof window !== 'undefined') {
+    console.log('[WebSocket]', ...args);
+  }
 };
 
 interface UseWebSocketOptions {
@@ -206,10 +209,11 @@ export function useGlobalEvents() {
       if (msg.type) {
         const eventType = msg.type;
         if (['task_created', 'task_updated', 'task_cancelled'].includes(eventType)) {
-          // Invalidate task-related queries to trigger refetch
-          queryClient.invalidateQueries({ queryKey: ['tasks'] });
-          queryClient.invalidateQueries({ queryKey: ['status'] });
-          debugLog(`Received ${eventType}, invalidated queries`);
+          // Invalidate task-related queries to trigger immediate refetch
+          // Use refetchType: 'all' to refetch all matching queries immediately
+          queryClient.invalidateQueries({ queryKey: ['tasks'], refetchType: 'all' });
+          queryClient.invalidateQueries({ queryKey: ['status'], refetchType: 'all' });
+          debugLog(`Received ${eventType}, invalidated queries and triggered refetch`);
         }
         return;
       }
