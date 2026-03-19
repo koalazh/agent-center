@@ -12,7 +12,7 @@ AgentCenter provides **task status visualization, dependency orchestration, and 
 > Currently supports **Claude Code CLI**, with more Agents coming soon
 
 <div align="center">
-  <img src="docs/images/en/main-interface.png" width="70%" alt="AgentCenter Main Interface"/>
+  <img src="docs/images/en/main-interface.png" width="100%" alt="AgentCenter Main Interface"/>
   <br/>
   <small>Figure: AgentCenter Main Interface - Task management and Agent status panel</small>
 </div>
@@ -26,10 +26,14 @@ AgentCenter provides **task status visualization, dependency orchestration, and 
 **Prerequisites**: Install Node.js, uv, and Claude Code CLI first. See [Full Deployment Guide](#full-deployment-guide) for details.
 
 ```bash
-# 1. Install project dependencies (one-time)
+# 1. Clone the repository
+git clone git@github.com:pyroalpha/agent-center.git
+cd agent-center
+
+# 2. Install project dependencies (one-time)
 npm run setup
 
-# 2. Start development server
+# 3. Start development server
 npm run dev
 ```
 
@@ -69,7 +73,7 @@ Access http://localhost:3010
 > Best for: Refactoring + doc updates, multi-step migrations, and other tasks that need sequential execution
 
 <div align="center">
-  <img src="docs/images/en/dependency-orchestration.png" width="50%" alt="Dependency Orchestration Demo"/>
+  <img src="docs/images/en/dependency-orchestration.png" width="100%" alt="Dependency Orchestration Demo"/>
   <br/>
   <small>Figure: Dependency Orchestration - Task A completion auto-triggers Task B</small>
 </div>
@@ -86,7 +90,7 @@ Access http://localhost:3010
 > Best for: Developing multiple features simultaneously, each with multiple tasks
 
 <div align="center">
-  <img src="docs/images/en/todo-human.png" width="20%" alt="Pending Review Management"/>
+  <img src="docs/images/en/todo-human.png" width="100%" alt="Pending Review Management"/>
   <br/>
   <small>Figure: Pending Review Management - Only shows tasks needing your intervention</small>
 </div>
@@ -103,7 +107,7 @@ Access http://localhost:3010
 > Best for: Sudden ideas when you don't want to interrupt current work
 
 <div align="center">
-  <img src="docs/images/en/inbox.png" width="30%" alt="Inbox Ideas"/>
+  <img src="docs/images/en/inbox.png" width="100%" alt="Inbox Ideas"/>
   <br/>
   <small>Figure: Inbox - Record ideas anytime, anywhere</small>
 </div>
