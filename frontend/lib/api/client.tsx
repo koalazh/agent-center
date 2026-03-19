@@ -1,6 +1,9 @@
 /**
  * API Client Configuration for AgentCenter
  * React Query setup with optimized defaults
+ *
+ * Uses runtime configuration - API_DOMAIN and WS_DOMAIN are read from
+ * window.__RUNTIME_CONFIG__ which is injected at page load time.
  */
 
 'use client';
@@ -10,20 +13,65 @@ import { useState } from 'react';
 import { useManagerStore } from '@/lib/state/atoms';
 
 /**
- * API base URL - use relative path to leverage Next.js rewrites (no CORS issues)
- * For direct backend access, set NEXT_PUBLIC_API_DOMAIN in .env.local
+ * Runtime configuration
+ * Injected at page load via /api/config endpoint
  */
-const isServer = typeof window === 'undefined';
-// 注意：默认端口为 8010，与 next.config.js 保持一致
-export const API_BASE_URL = isServer
-  ? (process.env.NEXT_PUBLIC_API_DOMAIN ?? 'http://localhost:8010')  // Server-side: direct backend URL
-  : '';  // Client-side: use relative path (Next.js rewrites will proxy)
+interface RuntimeConfig {
+  API_DOMAIN: string;
+  WS_DOMAIN: string;
+}
+
+// Global config - will be populated from window.__RUNTIME_CONFIG__
+let runtimeConfig: RuntimeConfig | null = null;
 
 /**
- * WebSocket base URL - always direct connection
- * 注意：默认端口为 9051，如需修改请在 .env.local 中配置 NEXT_PUBLIC_WS_DOMAIN
+ * Get runtime config from window object (client-side) or use defaults
  */
-export const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_DOMAIN ?? 'ws://localhost:8010';
+function getRuntimeConfig(): RuntimeConfig {
+  if (typeof window !== 'undefined' && (window as any).__RUNTIME_CONFIG__) {
+    runtimeConfig = (window as any).__RUNTIME_CONFIG__;
+  }
+  return runtimeConfig || {
+    API_DOMAIN: 'http://localhost:8010',
+    WS_DOMAIN: 'ws://localhost:8010',
+  };
+}
+
+/**
+ * API base URL - determined at runtime based on environment
+ *
+ * NOTE: We use a function to get the API base URL at runtime, not a constant.
+ * This allows the same Docker image to be deployed to different environments
+ * with different backend URLs specified via environment variables.
+ */
+const isServer = typeof window === 'undefined';
+
+function getClientApiBaseUrl(): string {
+  // Client-side: use full URL from runtime config
+  if (typeof window !== 'undefined' && (window as any).__RUNTIME_CONFIG__) {
+    return (window as any).__RUNTIME_CONFIG__.API_DOMAIN || '';
+  }
+  return '';
+}
+
+function getServerApiBaseUrl(): string {
+  // Server-side: read from environment variables
+  return process.env.API_DOMAIN || '';
+}
+
+/**
+ * Get API base URL - uses runtime config on client side, env vars on server side
+ */
+export function getApiBaseUrl(): string {
+  return isServer ? getServerApiBaseUrl() : getClientApiBaseUrl();
+}
+
+/**
+ * Get WebSocket base URL from runtime config
+ */
+export function getWsBaseUrl(): string {
+  return getRuntimeConfig().WS_DOMAIN;
+}
 
 /**
  * React Query client with optimized defaults
@@ -53,7 +101,9 @@ export async function apiFetch<T>(
   endpoint: string,
   options?: RequestInit & { silent?: boolean }
 ): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`;
+  // Get API base URL at request time (not build time)
+  const baseUrl = getApiBaseUrl();
+  const url = `${baseUrl}${endpoint}`;
   const silent = options?.silent ?? false;
 
   try {

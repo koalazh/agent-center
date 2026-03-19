@@ -12,7 +12,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { getTask, cancelTask, approveTask, continueTask, retryTask } from '@/lib/api/tasks';
-import { WS_BASE_URL } from '@/lib/api/client';
+import { getWsBaseUrl } from '@/lib/api/client';
 import { Button } from '@/components/ui';
 import { Modal } from '@/components/ui/Modal';
 import { BottomSheet } from '@/components/ui/BottomSheet';
@@ -97,7 +97,8 @@ export function TaskDrawer({ isOpen, onClose, taskId }: TaskDrawerProps) {
     if (!task || !isOpen) return;
     if (task.status !== 'queued' && task.status !== 'running') return;
 
-    const ws = new WebSocket(`${WS_BASE_URL}/ws/logs/${taskId}`);
+    const wsDomain = getWsBaseUrl();
+    const ws = new WebSocket(`${wsDomain}/ws/logs/${taskId}`);
     wsRef.current = ws;
 
     ws.onopen = () => {

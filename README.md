@@ -234,13 +234,15 @@ cp backend/.env.example backend/.env
 # - TASK_TIMEOUT=3600       # 任务超时时间（秒）
 # - POST_PROCESS_TIMEOUT=600 # 后处理超时时间（秒）
 
-# 前端配置
+# 前端配置（本地开发）
 cp frontend/.env.example frontend/.env
 
 # 编辑 frontend/.env，主要配置项：
 # - NEXT_PUBLIC_API_DOMAIN=http://localhost:8010     # 后端 API 地址
 # - NEXT_PUBLIC_WS_DOMAIN=ws://localhost:8010        # WebSocket 地址
 ```
+
+> **注意**：前端环境变量仅在本地开发时使用。生产环境（Docker 部署）使用**运行时配置**，无需构建时传入环境变量。
 
 ---
 
@@ -324,7 +326,9 @@ sudo firewall-cmd --reload
 > **注意**：`0.0.0.0` 监听会暴露给局域网，请确保在受信任网络中使用。
 > 生产环境请使用反向代理（Nginx/Caddy）并配置 HTTPS。
 
-### Docker Compose[待完善]
+### Docker Compose
+
+**一键部署（推荐）：**
 
 ```bash
 # 1. 克隆项目
@@ -341,6 +345,28 @@ docker-compose up -d
 # 4. 访问前端
 open http://localhost:3010
 ```
+
+**运行时配置（重要特性）：**
+
+前端支持**运行时环境变量注入**，无需构建时指定后端地址：
+
+```bash
+# 构建通用镜像（一次构建，多环境部署）
+docker build -t agent-center:latest -f frontend/Dockerfile .
+
+# 运行时指定后端地址
+docker run -d --name ac-frontend \
+  -p 3010:3010 \
+  -e API_DOMAIN=http://backend:8010 \
+  -e WS_DOMAIN=ws://backend:8010 \
+  agent-center:latest
+```
+
+**配置说明：**
+- `API_DOMAIN`: 后端 API 地址（必填）
+- `WS_DOMAIN`: WebSocket 地址（必填）
+- 配置通过 `/api/config` 端点动态注入到页面
+- 前端自动读取配置并发送到正确的后端地址
 
 ---
 

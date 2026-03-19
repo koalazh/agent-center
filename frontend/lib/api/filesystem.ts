@@ -2,7 +2,7 @@
  * Filesystem API utilities
  */
 
-import { API_BASE_URL } from './client';
+import { getApiBaseUrl } from './client';
 
 export interface FileSystemEntry {
   name: string;
@@ -38,7 +38,8 @@ export async function browseDirectory(
   if (path) params.set('path', path);
   if (showFiles) params.set('show_files', 'true');
 
-  const response = await fetch(`${API_BASE_URL}/api/filesystem/browse?${params}`);
+  const baseUrl = getApiBaseUrl();
+  const response = await fetch(`${baseUrl}/api/filesystem/browse?${params}`);
   if (!response.ok) {
     const error = await response.text();
     throw new Error(`Failed to browse directory: ${error}`);
@@ -54,6 +55,7 @@ export async function validatePath(
   requireGit = false
 ): Promise<PathValidationResult> {
   const params = new URLSearchParams({ path, require_git: String(requireGit) });
-  const response = await fetch(`${API_BASE_URL}/api/filesystem/validate?${params}`);
+  const baseUrl = getApiBaseUrl();
+  const response = await fetch(`${baseUrl}/api/filesystem/validate?${params}`);
   return response.json();
 }
