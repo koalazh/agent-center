@@ -8,6 +8,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useManagerStore } from '@/lib/state/atoms';
 import { getWsBaseUrl } from '@/lib/api/client';
+import type { Task } from '@/types/task';
 
 const debugLog = (...args: unknown[]) => {
   // Debug logging enabled for troubleshooting
@@ -198,6 +199,9 @@ export function useGlobalEvents() {
   const queryClient = useQueryClient();
   const setWorkers = useManagerStore((state) => state.setWorkers);
   const setStatus = useManagerStore((state) => state.setStatus);
+  const updateTask = useManagerStore((state) => state.updateTask);
+  const tasks = useManagerStore((state) => state.tasks);
+  const setTasks = useManagerStore((state) => state.setTasks);
 
   useEffect(() => {
     // Initialize connection on mount
@@ -214,6 +218,25 @@ export function useGlobalEvents() {
           queryClient.invalidateQueries({ queryKey: ['tasks'], refetchType: 'all' });
           queryClient.invalidateQueries({ queryKey: ['status'], refetchType: 'all' });
           debugLog(`Received ${eventType}, invalidated queries and triggered refetch`);
+
+          // Also update Zustand store directly for immediate UI update
+          // The backend sends: { type: "task_updated", data: { id: 123, status: "running", ... } }
+          const taskData = msg.data as Partial<Task> & { id?: number };
+          if (taskData?.id) {
+            if (eventType === 'task_cancelled') {
+              // Remove task from store
+              setTasks(tasks.filter(t => t.id !== taskData.id));
+              debugLog(`Removed task ${taskData.id} from Zustand store`);
+            } else if (eventType === 'task_created') {
+              // Add new task to store
+              setTasks([...tasks, taskData as Task]);
+              debugLog(`Added task ${taskData.id} to Zustand store`);
+            } else {
+              // Update task in store
+              updateTask(taskData.id, taskData);
+              debugLog(`Updated Zustand store for task ${taskData.id}`);
+            }
+          }
         }
         return;
       }
@@ -237,5 +260,5 @@ export function useGlobalEvents() {
       };
     }
     return () => {};
-  }, [setWorkers, setStatus, queryClient]);
+  }, [setWorkers, setStatus, queryClient, updateTask, setTasks, tasks]);
 }
