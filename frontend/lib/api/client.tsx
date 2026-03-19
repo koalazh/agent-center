@@ -47,16 +47,15 @@ function getRuntimeConfig(): RuntimeConfig {
 const isServer = typeof window === 'undefined';
 
 function getClientApiBaseUrl(): string {
-  // Client-side: use full URL from runtime config
-  if (typeof window !== 'undefined' && (window as any).__RUNTIME_CONFIG__) {
-    return (window as any).__RUNTIME_CONFIG__.API_DOMAIN || '';
-  }
+  // Client-side: use relative path to leverage next.config.js rewrites
+  // This avoids CORS issues by keeping requests same-origin
   return '';
 }
 
 function getServerApiBaseUrl(): string {
-  // Server-side: read from environment variables
-  return process.env.API_DOMAIN || '';
+  // Server-side (SSR): use environment variable or default to localhost:8010
+  // SSR requests go directly to the backend, not through rewrites
+  return process.env.API_DOMAIN || 'http://localhost:8010';
 }
 
 /**
